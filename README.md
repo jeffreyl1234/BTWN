@@ -45,6 +45,23 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## 4) Project structure (where code goes)
+
+- `app/`:
+  - Frontend pages and UI
+  - Examples: `app/page.js`, `app/explore/page.js`, `app/business/[id]/page.js`
+- `app/api/`:
+  - Backend API routes (server code)
+  - Examples: `app/api/businesses/route.js`, `app/api/businesses/[id]/route.js`
+- `lib/`:
+  - Shared server helpers and business logic
+  - Examples: Supabase client setup, payload normalization/validation
+- `supabase/`:
+  - Database SQL files and schema docs
+  - Example: `supabase/schema.sql`
+- `.env.local`:
+  - Local secrets/keys only (never commit)
+
 ## Included routes/pages
 
 - Home: `/`
@@ -53,4 +70,3 @@ Open `http://localhost:3000`.
 - Admin add form: `/admin/add-business`
 - API list/create: `/api/businesses`
 - API detail: `/api/businesses/:id`
-# BTWN
