@@ -1,14 +1,9 @@
 import Link from "next/link";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getBusinessById } from "@/lib/businessData";
 
 export default async function BusinessDetailPage({ params }) {
   const { id } = await params;
-  const supabase = getSupabaseAdmin();
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const business = await getBusinessById(id);
 
   if (!business) {
     return (
@@ -22,7 +17,7 @@ export default async function BusinessDetailPage({ params }) {
   }
 
   return (
-    <section className="stack">
+    <section className="stack page-space">
       <h1>{business.name}</h1>
       <p className="muted">
         {business.category} · {business.location}

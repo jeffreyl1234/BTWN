@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { listBusinesses } from "@/lib/businessData";
 import { normalizeBusinessPayload, validateBusinessPayload } from "@/lib/business";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -7,29 +8,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get("q") || "").trim();
     const category = (searchParams.get("category") || "").trim();
-
-    const supabase = getSupabaseAdmin();
-    let query = supabase
-      .from("businesses")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
-
-    if (category && category !== "all") {
-      query = query.eq("category", category);
-    }
-
-    if (q) {
-      const safe = q.replace(/[,]/g, "");
-      query = query.or(
-        `name.ilike.%${safe}%,category.ilike.%${safe}%,description.ilike.%${safe}%`
-      );
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-
-    return NextResponse.json({ businesses: data || [] });
+    const businesses = await listBusinesses({ q, category });
+    return NextResponse.json({ businesses });
   } catch (error) {
     return NextResponse.json(
       { error: error.message || "Failed to fetch businesses." },

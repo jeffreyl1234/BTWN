@@ -43,12 +43,19 @@ export default function ExplorePage() {
     fetchBusinesses("", "all");
   }, [fetchBusinesses]);
 
+  const categoryOptions = ["all", ...new Set(businesses.map((b) => b.category))]
+    .filter(Boolean)
+    .map((item) => item.toLowerCase());
+
   return (
-    <section className="stack">
+    <section className="stack page-space">
       <h1>Explore Businesses</h1>
+      <p className="muted">
+        Showing real database rows when available, otherwise starter demo data.
+      </p>
 
       <form
-        className="row"
+        className="row wrap card"
         onSubmit={(e) => {
           e.preventDefault();
           fetchBusinesses(q, category);
@@ -67,7 +74,7 @@ export default function ExplorePage() {
             fetchBusinesses(q, next);
           }}
         >
-          {categories.map((item) => (
+          {[...new Set([...categories, ...categoryOptions])].map((item) => (
             <option key={item} value={item}>
               {item}
             </option>
@@ -84,12 +91,16 @@ export default function ExplorePage() {
         <p className="muted">No businesses found.</p>
       )}
 
-      <div className="grid">
+      <div className="grid grid-2">
         {businesses.map((biz) => (
           <article key={biz.id} className="card stack">
+            <div className="row">
+              <p className="pill">{biz.category}</p>
+              <p className="muted">{biz.location}</p>
+            </div>
             <h3>{biz.name}</h3>
             <p className="muted">
-              {biz.category} · {biz.location}
+              {biz.phone || biz.email || "Contact info on profile"}
             </p>
             {biz.description && <p>{biz.description}</p>}
             <div>
