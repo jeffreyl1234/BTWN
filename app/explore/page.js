@@ -91,9 +91,9 @@ export default function ExplorePage() {
         <p className="muted">No businesses found.</p>
       )}
 
-      <div className="grid grid-2">
+      <div className="grid grid-3">
         {businesses.map((biz) => (
-          <article key={biz.id} className="card stack">
+          <article key={biz.id} className="card stack business-card">
             <div className="row">
               <p className="pill">{biz.category}</p>
               <p className="muted">{biz.location}</p>
