@@ -21,9 +21,6 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    if ((body?.adminSecret || "") !== process.env.ADMIN_SECRET) {
-      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-    }
 
     const payload = normalizeBusinessPayload(body);
     const message = validateBusinessPayload(payload);

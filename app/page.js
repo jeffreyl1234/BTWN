@@ -1,39 +1,104 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function Home() {
-  return (
-    <section className="stack page-space">
-      <div className="hero card stack">
-        <p className="pill">UCLA Community Directory</p>
-        <h1>Discover trusted student-friendly services around campus.</h1>
-        <p className="muted">
-          BTWN helps students quickly find small businesses for beauty,
-          education, creative work, events, and tech help.
-        </p>
-        <div className="row wrap">
-          <Link href="/explore" className="button">
-            Explore Businesses
-          </Link>
-          <Link href="/admin/add-business" className="button button-secondary">
-            Add Business
-          </Link>
-        </div>
-      </div>
+/* Category pills shown in two rows on the landing page */
+const CATEGORIES_ROW1 = [
+  "DJing",
+  "Tutoring",
+  "Photography",
+  "Fitness",
+  "Developers",
+  "Design",
+  "Engineering",
+];
 
-      <div className="grid grid-3">
-        <article className="card stack">
-          <h3>Browse fast</h3>
-          <p className="muted">Filter by category and quickly compare options.</p>
-        </article>
-        <article className="card stack">
-          <h3>Direct contact</h3>
-          <p className="muted">Reach out by Instagram, phone, email, or website.</p>
-        </article>
-        <article className="card stack">
-          <h3>Built for UCLA</h3>
-          <p className="muted">Focused on businesses students actually use.</p>
-        </article>
+const CATEGORIES_ROW2 = [
+  "Language Tutors",
+  "Videography",
+  "Event Services",
+  "Music",
+];
+
+export default function Home() {
+  const router = useRouter();
+  const [q, setQ] = useState("");
+
+  /* Navigate to explore with the typed search query */
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (q.trim()) params.set("q", q.trim());
+    router.push(`/explore${q.trim() ? `?${params.toString()}` : ""}`);
+  };
+
+  /* Navigate to explore pre-filtered by the selected category */
+  const handleCategory = (category) => {
+    router.push(`/explore?category=${encodeURIComponent(category.toLowerCase())}`);
+  };
+
+  return (
+    <div className="home-hero">
+      <div className="home-content">
+
+        {/* Hero title */}
+        <h1 className="home-title">BT:WN</h1>
+        <p className="home-subtitle">
+          Discover student talent. Promote your skills. Build your brand.
+        </p>
+
+        {/* Search bar — calls /api/businesses via the explore page */}
+        <form onSubmit={handleSearch} className="home-search-form" role="search">
+          <input
+            className="home-search-input"
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search for a service or business..."
+            aria-label="Search for a service or business"
+          />
+          <button type="submit" className="home-search-btn" aria-label="Search">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/button.svg" width={24} height={24} alt="" aria-hidden="true" />
+          </button>
+        </form>
+
+        {/* Category filter pills — two rows matching the Figma design */}
+        <nav className="home-categories" aria-label="Browse by category">
+          <div className="home-category-row">
+            {CATEGORIES_ROW1.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className="home-category-pill"
+                onClick={() => handleCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <div className="home-category-row">
+            {CATEGORIES_ROW2.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className="home-category-pill"
+                onClick={() => handleCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        {/* Link to full explore page with all categories */}
+        <Link href="/explore" className="home-more-btn">
+          More Categories →
+        </Link>
+
       </div>
-    </section>
+    </div>
   );
 }

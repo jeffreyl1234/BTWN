@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,17 +21,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <header className="site-header">
-          <div className="container row">
-            <Link href="/" className="brand">
-              BTWN
-            </Link>
-            <nav className="row">
-              <Link href="/explore">Explore</Link>
-              <Link href="/admin/add-business">Add</Link>
-            </nav>
-          </div>
-        </header>
+        {/* SiteHeader is a client component — renders search bar on non-home pages */}
+        <SiteHeader />
         <main className="container">{children}</main>
       </body>
     </html>

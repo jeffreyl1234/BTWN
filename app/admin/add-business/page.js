@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const initialState = {
   name: "",
@@ -11,18 +12,19 @@ const initialState = {
   website: "",
   phone: "",
   email: "",
-  adminSecret: "",
 };
 
 export default function AddBusinessPage() {
   const [form, setForm] = useState(initialState);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function onSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setMessage("");
+    setIsError(false);
 
     try {
       const res = await fetch("/api/businesses", {
@@ -34,104 +36,161 @@ export default function AddBusinessPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save.");
 
-      setMessage("Business saved.");
+      setMessage("Business saved successfully!");
       setForm(initialState);
     } catch (err) {
+      setIsError(true);
       setMessage(err.message);
     } finally {
       setSaving(false);
     }
   }
 
+  /* Helper to reduce onChange boilerplate */
+  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+
   return (
-    <section className="stack">
-      <h1>Add Business</h1>
+    <div className="add-biz-page">
 
-      <form className="grid" onSubmit={onSubmit}>
-        <div className="grid grid-2">
-          <label>
-            Name *
-            <input
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-          </label>
-          <label>
-            Category *
-            <input
-              required
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            />
-          </label>
-        </div>
+      {/* Back link — reuses the shared biz-back-link style */}
+      <Link href="/explore" className="biz-back-link">
+        <span aria-hidden="true">←</span> Back to Explore
+      </Link>
 
-        <label>
-          Description
-          <textarea
-            rows={4}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
-        </label>
+      {/* Page heading */}
+      <div className="add-biz-heading">
+        <h1 className="add-biz-title">Add Your Business</h1>
+        <p className="add-biz-subtitle">
+          List your services and connect with students in your community.
+        </p>
+      </div>
 
-        <label>
-          Location *
-          <input
-            required
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-          />
-        </label>
+      {/* White card matching the business detail and explore card style */}
+      <div className="add-biz-card">
+        <form onSubmit={onSubmit} className="add-biz-form" noValidate>
 
-        <div className="grid grid-2">
-          <label>
-            Instagram URL
-            <input
-              value={form.instagram}
-              onChange={(e) => setForm({ ...form, instagram: e.target.value })}
-            />
-          </label>
-          <label>
-            Website URL
-            <input
-              value={form.website}
-              onChange={(e) => setForm({ ...form, website: e.target.value })}
-            />
-          </label>
-          <label>
-            Phone
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            />
-          </label>
-          <label>
-            Email
-            <input
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-          </label>
-        </div>
+          {/* ── Basic info ─────────────────────────────────────────── */}
+          <section className="add-biz-section add-biz-section-first" aria-labelledby="basic-info-heading">
+            <h2 id="basic-info-heading" className="add-biz-section-title">BASIC INFO</h2>
 
-        <label>
-          Admin Secret *
-          <input
-            required
-            type="password"
-            value={form.adminSecret}
-            onChange={(e) => setForm({ ...form, adminSecret: e.target.value })}
-          />
-        </label>
+            <div className="add-biz-row-2">
+              <label className="add-biz-label">
+                Business Name <span className="add-biz-required" aria-hidden="true">*</span>
+                <input
+                  className="add-biz-input"
+                  required
+                  value={form.name}
+                  onChange={set("name")}
+                  placeholder="e.g. Campus Beats DJ"
+                />
+              </label>
+              <label className="add-biz-label">
+                Category <span className="add-biz-required" aria-hidden="true">*</span>
+                <input
+                  className="add-biz-input"
+                  required
+                  value={form.category}
+                  onChange={set("category")}
+                  placeholder="e.g. DJing, Photography"
+                />
+              </label>
+            </div>
 
-        <button className="button" disabled={saving} type="submit">
-          {saving ? "Saving..." : "Save Business"}
-        </button>
-      </form>
+            <label className="add-biz-label">
+              Location <span className="add-biz-required" aria-hidden="true">*</span>
+              <input
+                className="add-biz-input"
+                required
+                value={form.location}
+                onChange={set("location")}
+                placeholder="e.g. Westwood, UCLA Campus"
+              />
+            </label>
 
-      {message && <p>{message}</p>}
-    </section>
+            <label className="add-biz-label">
+              Description
+              <textarea
+                className="add-biz-input add-biz-textarea"
+                rows={4}
+                value={form.description}
+                onChange={set("description")}
+                placeholder="Describe your services, specialties, and what makes you stand out..."
+              />
+            </label>
+          </section>
+
+          {/* ── Contact info ───────────────────────────────────────── */}
+          <section className="add-biz-section" aria-labelledby="contact-heading">
+            <h2 id="contact-heading" className="add-biz-section-title">CONTACT</h2>
+
+            <div className="add-biz-row-2">
+              <label className="add-biz-label">
+                Email
+                <input
+                  className="add-biz-input"
+                  type="email"
+                  value={form.email}
+                  onChange={set("email")}
+                  placeholder="you@example.com"
+                />
+              </label>
+              <label className="add-biz-label">
+                Phone
+                <input
+                  className="add-biz-input"
+                  type="tel"
+                  value={form.phone}
+                  onChange={set("phone")}
+                  placeholder="(555) 000-0000"
+                />
+              </label>
+              <label className="add-biz-label">
+                Instagram URL
+                <input
+                  className="add-biz-input"
+                  type="url"
+                  value={form.instagram}
+                  onChange={set("instagram")}
+                  placeholder="https://instagram.com/youraccount"
+                />
+              </label>
+              <label className="add-biz-label">
+                Website URL
+                <input
+                  className="add-biz-input"
+                  type="url"
+                  value={form.website}
+                  onChange={set("website")}
+                  placeholder="https://yourwebsite.com"
+                />
+              </label>
+            </div>
+          </section>
+
+
+          {/* ── Submit footer ──────────────────────────────────────── */}
+          <div className="add-biz-footer">
+            {message && (
+              <p
+                className={`add-biz-message${isError ? " add-biz-message-error" : " add-biz-message-success"}`}
+                role={isError ? "alert" : "status"}
+              >
+                {message}
+              </p>
+            )}
+            <button
+              className="add-biz-submit-btn"
+              type="submit"
+              disabled={saving}
+              aria-busy={saving}
+            >
+              {saving ? "Saving..." : "Save Business"}
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
   );
 }
