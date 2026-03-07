@@ -61,7 +61,7 @@ export default function Home() {
           {featuredCategories.map((category) => (
             <Link
               key={category}
-              href={`/explore?category=${encodeURIComponent(category.toLowerCase())}`}
+              href={`/explore?q=${encodeURIComponent(category)}`}
               className="category-pill"
               role="listitem"
             >
