@@ -1,4 +1,4 @@
-import Link from "next/link";
+import SiteHeader from "@/app/components/SiteHeader";
 import "./globals.css";
 
 export const metadata = {
@@ -10,21 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <div className="container row">
-            <Link href="/" className="brand">
-              BT:WN
-            </Link>
-            <nav className="row site-nav" aria-label="Primary">
-              <Link href="/explore" className="text-link">
-                Write a Review
-              </Link>
-              <Link href="/admin/add-business" className="button header-cta">
-                Add Your Business
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
         <main className="container">{children}</main>
       </body>
     </html>

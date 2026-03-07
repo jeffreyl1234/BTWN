@@ -70,8 +70,8 @@ export default function ExploreClient() {
     const options = businesses
       .map((item) => normalizeCategory(item.category))
       .filter(Boolean);
-    return [...new Set(["all", ...defaultCategories, ...options])];
-  }, [businesses]);
+    return [...new Set(["all", ...defaultCategories, ...options, categoryParam])];
+  }, [businesses, categoryParam]);
 
   function updateUrl(nextQ, nextCategory) {
     const params = new URLSearchParams();

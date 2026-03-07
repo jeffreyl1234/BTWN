@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getBusinessById } from "@/lib/businessData";
+import OwnerActions from "./OwnerActions";
 
 export default async function BusinessDetailPage({ params }) {
   const { id } = await params;
@@ -23,6 +24,8 @@ export default async function BusinessDetailPage({ params }) {
         {business.category} · {business.location}
       </p>
       {business.description && <p>{business.description}</p>}
+
+      <OwnerActions businessId={business.id} ownerId={business.owner_id} />
 
       <div className="card stack">
         <h3>Contact</h3>

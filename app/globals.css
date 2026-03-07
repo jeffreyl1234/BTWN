@@ -88,11 +88,28 @@ main.container {
 
 .site-nav {
   gap: 0.95rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .text-link {
   font-size: 0.82rem;
   color: var(--text-secondary);
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.text-button:hover,
+.text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .text-link-underlined {

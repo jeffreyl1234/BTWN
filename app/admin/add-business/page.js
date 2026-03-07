@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getSessionState } from "@/lib/authClient";
+import { getSupabaseBrowser, isSignupConfigured } from "@/lib/supabaseBrowser";
 
 const initialState = {
   name: "",
@@ -20,6 +22,37 @@ export default function AddBusinessPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [sessionUser, setSessionUser] = useState(null);
+
+  const signupConfigured = isSignupConfigured();
+
+  useEffect(() => {
+    let mounted = true;
+
+    getSessionState().then(({ user }) => {
+      if (!mounted) return;
+      setSessionUser(user);
+    });
+
+    if (!signupConfigured) {
+      return () => {
+        mounted = false;
+      };
+    }
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setSessionUser(session?.user || null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [signupConfigured]);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -28,10 +61,19 @@ export default function AddBusinessPage() {
     setError("");
 
     try {
+      const { accessToken } = await getSessionState();
+      const payload = { ...form };
+      const headers = { "Content-Type": "application/json" };
+
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+        delete payload.adminSecret;
+      }
+
       const res = await fetch("/api/businesses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        headers,
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -40,25 +82,32 @@ export default function AddBusinessPage() {
       setMessage("Business saved.");
       setForm(initialState);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to save business.");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <section className="stack">
+    <section className="stack page-space">
       <h1>Add Business</h1>
       <p className="muted">
         Browsing and contacting businesses does not require an account.
       </p>
-      <p className="muted">
-        Want account-based management later?{" "}
-        <Link href="/signup" className="text-link-underlined">
-          Create an owner account
-        </Link>
-        .
-      </p>
+      {sessionUser ? (
+        <p className="muted">
+          You are creating this listing as <strong>{sessionUser.email}</strong>. You will be
+          able to edit it later from <Link href="/account">My Businesses</Link>.
+        </p>
+      ) : (
+        <p className="muted">
+          To edit your listing later, <Link href="/login">log in</Link> or{" "}
+          <Link href="/signup" className="text-link-underlined">
+            create an owner account
+          </Link>
+          . Without login, you can still submit using the admin secret.
+        </p>
+      )}
 
       <form className="grid" onSubmit={onSubmit}>
         <div className="grid grid-2">
@@ -129,16 +178,18 @@ export default function AddBusinessPage() {
           </label>
         </div>
 
-        <label>
-          Admin secret *
-          <input
-            required
-            type="password"
-            value={form.adminSecret}
-            onChange={(e) => setForm({ ...form, adminSecret: e.target.value })}
-            placeholder="From .env.local ADMIN_SECRET"
-          />
-        </label>
+        {!sessionUser && (
+          <label>
+            Admin secret *
+            <input
+              required
+              type="password"
+              value={form.adminSecret}
+              onChange={(e) => setForm({ ...form, adminSecret: e.target.value })}
+              placeholder="From .env.local ADMIN_SECRET"
+            />
+          </label>
+        )}
 
         <button className="button" disabled={saving} type="submit">
           {saving ? "Saving..." : "Save Business"}

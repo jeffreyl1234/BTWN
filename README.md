@@ -10,34 +10,24 @@ Copy and fill env vars:
 cp .env.example .env.local
 ```
 
-Required values for Supabase-backed reads/writes:
+Required values for data APIs:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_SECRET` — shared secret for the Add Business form (POST /api/businesses)
+- `ADMIN_SECRET` (fallback for unauthenticated Add Business submissions)
 
-For account signup in the UI, provide one public key:
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`, or
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
+Required values for signup/login in the UI:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 
 ## 2) Database setup (Supabase SQL editor)
 
-Run:
+Run the full schema in [`supabase/schema.sql`](./supabase/schema.sql).
 
-```sql
--- see full file: supabase/schema.sql
-create table if not exists public.businesses (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  category text not null,
-  description text not null default '',
-  instagram text,
-  website text,
-  phone text,
-  email text,
-  location text not null,
-  created_at timestamptz not null default now()
-);
-```
+`businesses` now includes owner fields used for account-based editing:
+- `owner_id`
+- `owner_email`
+
+If your table already existed, re-run `supabase/schema.sql` to apply the `alter table ... add column if not exists ...` statements.
 
 ## 3) Run locally
 
@@ -48,29 +38,23 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## 4) Project structure (where code goes)
+## 4) Routes
 
-- `app/`:
-  - Frontend pages and UI
-  - Examples: `app/page.js`, `app/explore/page.js`, `app/business/[id]/page.js`
-- `app/api/`:
-  - Backend API routes (server code)
-  - Examples: `app/api/businesses/route.js`, `app/api/businesses/[id]/route.js`
-- `lib/`:
-  - Shared server helpers and business logic
-  - Examples: Supabase client setup, payload normalization/validation
-- `supabase/`:
-  - Database SQL files and schema docs
-  - Example: `supabase/schema.sql`
-- `.env.local`:
-  - Local secrets/keys only (never commit)
+- `/` Home
+- `/explore` Browse businesses
+- `/business/:id` Business detail
+- `/business/:id/edit` Owner-only edit page
+- `/admin/add-business` Add business (login recommended; admin secret fallback)
+- `/signup` Account creation
+- `/login` Login
+- `/account` Owner dashboard
 
-## Included routes/pages
+## 5) API routes
 
-- Home: `/`
-- Explore: `/explore`
-- Detail: `/business/:id`
-- Sign up: `/signup`
-- Admin add form: `/admin/add-business`
-- API list/create: `/api/businesses`
-- API detail: `/api/businesses/:id`
+- `GET /api/businesses`
+- `POST /api/businesses`
+  - logged-in users create owner-linked listings
+  - unauthenticated submissions require `adminSecret`
+- `GET /api/businesses/:id`
+- `PATCH /api/businesses/:id` (owner-only)
+- `GET /api/me/businesses` (owner dashboard)

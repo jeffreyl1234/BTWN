@@ -2,6 +2,37 @@ import { NextResponse } from "next/server";
 import { listBusinesses } from "@/lib/businessData";
 import { normalizeBusinessPayload, validateBusinessPayload } from "@/lib/business";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getAuthenticatedUserFromRequest } from "@/lib/supabaseAuthServer";
+
+async function insertBusinessRecord(supabase, payload, user) {
+  if (user) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .insert({
+        ...payload,
+        owner_id: user.id,
+        owner_email: user.email,
+      })
+      .select("*")
+      .single();
+
+    if (error && /owner_id|owner_email|column/i.test(error.message || "")) {
+      throw new Error(
+        "Schema missing owner fields. Re-run supabase/schema.sql before account-based submissions."
+      );
+    }
+
+    return { data, error };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .insert(payload)
+    .select("*")
+    .single();
+
+  return { data, error };
+}
 
 export async function GET(request) {
   try {
@@ -25,8 +56,13 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    if ((body?.adminSecret || "") !== process.env.ADMIN_SECRET) {
-      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    const user = await getAuthenticatedUserFromRequest(request);
+
+    if (!user && (body?.adminSecret || "") !== process.env.ADMIN_SECRET) {
+      return NextResponse.json(
+        { error: "Unauthorized. Log in or provide valid admin secret." },
+        { status: 401 }
+      );
     }
 
     const payload = normalizeBusinessPayload(body);
@@ -36,11 +72,7 @@ export async function POST(request) {
     }
 
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
-      .from("businesses")
-      .insert(payload)
-      .select("*")
-      .single();
+    const { data, error } = await insertBusinessRecord(supabase, payload, user);
 
     if (error) throw error;
     return NextResponse.json({ business: data }, { status: 201 });

@@ -56,7 +56,7 @@ export default function SignUpPage() {
       const supabase = getSupabaseBrowser();
       const redirectTo =
         typeof window !== "undefined"
-          ? `${window.location.origin}/explore`
+          ? `${window.location.origin}/account`
           : undefined;
 
       const { error: signUpError } = await supabase.auth.signUp({
@@ -73,7 +73,7 @@ export default function SignUpPage() {
       if (signUpError) throw signUpError;
 
       setMessage(
-        "Account created. Check your email to verify your account, then sign in."
+        "Account created. Check your email to verify your account, then log in to manage your businesses."
       );
       setForm(initialForm);
     } catch (submitError) {
@@ -84,7 +84,7 @@ export default function SignUpPage() {
         msg.toLowerCase().includes("network");
       setError(
         isNetworkError
-          ? "Couldn’t reach Supabase. Check that NEXT_PUBLIC_SUPABASE_URL in .env.local is your real project URL (Supabase → Settings → API → Project URL), not the placeholder, then restart the dev server."
+          ? "Couldn’t reach Supabase. Verify your .env.local values and restart the dev server."
           : msg
       );
     } finally {
@@ -99,16 +99,14 @@ export default function SignUpPage() {
           <p className="pill">Create Account</p>
           <h1>Join BT:WN</h1>
           <p className="auth-card__subtitle muted">
-            Create an owner account for managing your business listing.
+            Create an owner account to add and edit your business listings.
           </p>
         </header>
 
         {!signupConfigured && (
           <div className="auth-alert auth-alert--error" role="alert">
-            Sign up is not configured. Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
-            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (or{" "}
-            <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY</code>) to{" "}
-            <code>.env.local</code>, then restart the dev server. See README for details.
+            Sign up is not configured. Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and a
+            public Supabase key to <code>.env.local</code>, then restart dev server.
           </div>
         )}
 
@@ -125,7 +123,7 @@ export default function SignUpPage() {
           </label>
 
           <label className="auth-label">
-            UCLA or preferred email
+            Email
             <input
               required
               type="email"
@@ -157,9 +155,7 @@ export default function SignUpPage() {
               minLength={8}
               className="auth-input"
               value={form.confirmPassword}
-              onChange={(event) =>
-                setField("confirmPassword", event.target.value)
-              }
+              onChange={(event) => setField("confirmPassword", event.target.value)}
               placeholder="Re-enter your password"
             />
           </label>
@@ -181,8 +177,8 @@ export default function SignUpPage() {
         )}
 
         <p className="muted auth-footnote">
-          You can still browse and contact businesses without an account.{" "}
-          <Link href="/admin/add-business">Back to add business</Link>.
+          Already have an account? <Link href="/login">Log in</Link>. You can browse and
+          contact businesses without an account.
         </p>
       </div>
     </section>
