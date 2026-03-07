@@ -19,6 +19,37 @@ export default function AddBusinessPage() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sessionUser, setSessionUser] = useState(null);
+
+  const signupConfigured = isSignupConfigured();
+
+  useEffect(() => {
+    let mounted = true;
+
+    getSessionState().then(({ user }) => {
+      if (!mounted) return;
+      setSessionUser(user);
+    });
+
+    if (!signupConfigured) {
+      return () => {
+        mounted = false;
+      };
+    }
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setSessionUser(session?.user || null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [signupConfigured]);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -27,9 +58,17 @@ export default function AddBusinessPage() {
     setIsError(false);
 
     try {
+      const { accessToken } = await getSessionState();
+      if (!accessToken) {
+        throw new Error("Log in is required to submit a business.");
+      }
+
       const res = await fetch("/api/businesses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify(form),
       });
 

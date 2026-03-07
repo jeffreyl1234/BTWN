@@ -8,5 +8,13 @@ create table if not exists public.businesses (
   phone text,
   email text,
   location text not null,
-  created_at timestamptz not null default now()
+  owner_id uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+alter table public.businesses
+  add column if not exists owner_id uuid,
+  add column if not exists updated_at timestamptz not null default now();
+
+create index if not exists businesses_owner_id_idx on public.businesses(owner_id);
