@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUserFromRequest } from "@/lib/supabaseAuthServer";
+import { toUserFacingSupabaseError } from "@/lib/supabaseErrors";
 
 export async function GET(request) {
   try {
@@ -20,14 +21,13 @@ export async function GET(request) {
       .order("created_at", { ascending: false })
       .limit(100);
 
-    if (error) throw error;
+    if (error) throw new Error(toUserFacingSupabaseError(error));
 
     return NextResponse.json({ businesses: data || [] });
   } catch (error) {
     return NextResponse.json(
       {
-        error:
-          error.message || "Failed to fetch account businesses. Ensure owner_id exists.",
+        error: error.message || "Failed to fetch account businesses.",
       },
       { status: 500 }
     );

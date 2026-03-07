@@ -57,3 +57,10 @@ Open `http://localhost:3000`.
 - `GET /api/businesses/:id`
 - `PATCH /api/businesses/:id` (owner-only)
 - `GET /api/me/businesses` (owner dashboard)
+
+## Troubleshooting
+
+- If you see `Could not find the table 'public.businesses' in the schema cache`:
+  1. Run the SQL in [`supabase/schema.sql`](./supabase/schema.sql) in Supabase SQL Editor.
+  2. Wait a few seconds for schema cache refresh.
+  3. Retry the request (or refresh the app).

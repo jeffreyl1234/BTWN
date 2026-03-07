@@ -3,6 +3,7 @@ import { listBusinesses } from "@/lib/businessData";
 import { normalizeBusinessPayload, validateBusinessPayload } from "@/lib/business";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUserFromRequest } from "@/lib/supabaseAuthServer";
+import { toUserFacingSupabaseError } from "@/lib/supabaseErrors";
 
 async function insertBusinessRecord(supabase, payload, user) {
   const { data, error } = await supabase
@@ -15,11 +16,7 @@ async function insertBusinessRecord(supabase, payload, user) {
     .select("*")
     .single();
 
-  if (error && /owner_id|owner_email|column/i.test(error.message || "")) {
-    throw new Error(
-      "Schema missing owner fields. Re-run supabase/schema.sql before account-based submissions."
-    );
-  }
+  if (error) throw new Error(toUserFacingSupabaseError(error));
 
   return { data, error };
 }
@@ -64,7 +61,7 @@ export async function POST(request) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await insertBusinessRecord(supabase, payload, user);
 
-    if (error) throw error;
+    if (error) throw new Error(toUserFacingSupabaseError(error));
     return NextResponse.json({ business: data }, { status: 201 });
   } catch (error) {
     return NextResponse.json(

@@ -92,94 +92,113 @@ export default function AddBusinessPage() {
       <p className="muted">
         Browsing and contacting businesses does not require an account.
       </p>
-      {sessionUser ? (
-        <p className="muted">
-          You are creating this listing as <strong>{sessionUser.email}</strong>. You will be
-          able to edit it later from <Link href="/account">My Businesses</Link>.
-        </p>
-      ) : (
-        <p className="muted">
-          To edit your listing later, <Link href="/login">log in</Link> or{" "}
-          <Link href="/signup" className="text-link-underlined">
-            create an owner account
-          </Link>
-          . Login is required before you can submit.
+
+      {!signupConfigured && (
+        <p className="auth-error">
+          Sign in is not configured. Add Supabase public auth env vars in{" "}
+          <code>.env.local</code>.
         </p>
       )}
 
-      <form className="grid" onSubmit={onSubmit}>
-        <div className="grid grid-2">
+      {!sessionUser && signupConfigured && (
+        <>
+          <p className="muted">
+            Login is required before you can submit a business listing.
+          </p>
+          <div className="row wrap">
+            <Link href="/login" className="button">
+              Log in
+            </Link>
+            <Link href="/signup" className="button button-secondary">
+              Create account
+            </Link>
+          </div>
+        </>
+      )}
+
+      {sessionUser && (
+        <p className="muted">
+          Creating as <strong>{sessionUser.email}</strong>. You can edit later in{" "}
+          <Link href="/account">My Businesses</Link>.
+        </p>
+      )}
+
+      {sessionUser && (
+        <form className="grid" onSubmit={onSubmit}>
+          <div className="grid grid-2">
+            <label>
+              Name *
+              <input
+                required
+                autoFocus
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </label>
+            <label>
+              Category *
+              <input
+                required
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              />
+            </label>
+          </div>
+
           <label>
-            Name *
+            Description
+            <textarea
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </label>
+
+          <label>
+            Location *
             <input
               required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
             />
           </label>
-          <label>
-            Category *
-            <input
-              required
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            />
-          </label>
-        </div>
 
-        <label>
-          Description
-          <textarea
-            rows={4}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
-        </label>
+          <div className="grid grid-2">
+            <label>
+              Instagram URL
+              <input
+                value={form.instagram}
+                onChange={(e) => setForm({ ...form, instagram: e.target.value })}
+              />
+            </label>
+            <label>
+              Website URL
+              <input
+                value={form.website}
+                onChange={(e) => setForm({ ...form, website: e.target.value })}
+              />
+            </label>
+            <label>
+              Phone
+              <input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </label>
+            <label>
+              Email
+              <input
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </label>
+          </div>
 
-        <label>
-          Location *
-          <input
-            required
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-          />
-        </label>
-
-        <div className="grid grid-2">
-          <label>
-            Instagram URL
-            <input
-              value={form.instagram}
-              onChange={(e) => setForm({ ...form, instagram: e.target.value })}
-            />
-          </label>
-          <label>
-            Website URL
-            <input
-              value={form.website}
-              onChange={(e) => setForm({ ...form, website: e.target.value })}
-            />
-          </label>
-          <label>
-            Phone
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            />
-          </label>
-          <label>
-            Email
-            <input
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-          </label>
-        </div>
-
-        <button className="button" disabled={saving || !sessionUser} type="submit">
-          {saving ? "Saving..." : sessionUser ? "Save Business" : "Log in to Submit"}
-        </button>
-      </form>
+          <button className="button" disabled={saving} type="submit">
+            {saving ? "Saving..." : "Save Business"}
+          </button>
+        </form>
+      )}
 
       {error && <p className="auth-error">{error}</p>}
       {message && <p className="auth-success">{message}</p>}

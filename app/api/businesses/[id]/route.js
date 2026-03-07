@@ -3,6 +3,7 @@ import { getBusinessById } from "@/lib/businessData";
 import { normalizeBusinessPayload, validateBusinessPayload } from "@/lib/business";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUserFromRequest } from "@/lib/supabaseAuthServer";
+import { toUserFacingSupabaseError } from "@/lib/supabaseErrors";
 
 export async function GET(_request, { params }) {
   try {
@@ -41,9 +42,13 @@ export async function PATCH(request, { params }) {
       .single();
 
     if (existingError) {
-      if (/owner_id|column/i.test(existingError.message || "")) {
+      const setupError = toUserFacingSupabaseError(existingError);
+      if (
+        setupError.startsWith("Database setup incomplete") ||
+        setupError.startsWith("Schema missing owner fields")
+      ) {
         return NextResponse.json(
-          { error: "Schema missing owner fields. Re-run supabase/schema.sql." },
+          { error: setupError },
           { status: 500 }
         );
       }
@@ -85,7 +90,7 @@ export async function PATCH(request, { params }) {
       .select("*")
       .single();
 
-    if (error) throw error;
+    if (error) throw new Error(toUserFacingSupabaseError(error));
     return NextResponse.json({ business: data });
   } catch (error) {
     return NextResponse.json(
