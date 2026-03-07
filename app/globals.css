@@ -90,22 +90,14 @@ main.container {
   gap: 0.95rem;
 }
 
-.icon-link {
-  width: 18px;
-  height: 18px;
-  color: #111827;
-  display: inline-grid;
-  place-items: center;
-}
-
-.icon-link svg {
-  width: 18px;
-  height: 18px;
-}
-
 .text-link {
   font-size: 0.82rem;
   color: var(--text-secondary);
+}
+
+.text-link-underlined {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .header-cta {

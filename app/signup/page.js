@@ -85,7 +85,7 @@ export default function SignUpPage() {
         <p className="pill">Create Account</p>
         <h1>Join BT:WN</h1>
         <p className="muted">
-          Create an account to save businesses, write reviews, and list your services.
+          Create an owner account for managing your business listing.
         </p>
 
         <form className="auth-form" onSubmit={onSubmit}>
@@ -145,8 +145,8 @@ export default function SignUpPage() {
         {message && <p className="auth-success">{message}</p>}
 
         <p className="muted auth-footnote">
-          Need to add your service listing right away?{" "}
-          <Link href="/admin/add-business">Submit your business profile</Link>.
+          You can still browse and contact businesses without an account.{" "}
+          <Link href="/admin/add-business">Back to add business</Link>.
         </p>
       </div>
     </section>

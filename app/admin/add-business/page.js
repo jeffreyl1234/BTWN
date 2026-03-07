@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 const initialState = {
@@ -46,6 +47,16 @@ export default function AddBusinessPage() {
   return (
     <section className="stack">
       <h1>Add Business</h1>
+      <p className="muted">
+        Browsing and contacting businesses does not require an account.
+      </p>
+      <p className="muted">
+        Want account-based management later?{" "}
+        <Link href="/signup" className="text-link-underlined">
+          Create an owner account
+        </Link>
+        .
+      </p>
 
       <form className="grid" onSubmit={onSubmit}>
         <div className="grid grid-2">
