@@ -13,7 +13,6 @@ cp .env.example .env.local
 Required values for data APIs:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_SECRET` (fallback for unauthenticated Add Business submissions)
 
 Required values for signup/login in the UI:
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -44,7 +43,7 @@ Open `http://localhost:3000`.
 - `/explore` Browse businesses
 - `/business/:id` Business detail
 - `/business/:id/edit` Owner-only edit page
-- `/admin/add-business` Add business (login recommended; admin secret fallback)
+- `/admin/add-business` Add business (login required)
 - `/signup` Account creation
 - `/login` Login
 - `/account` Owner dashboard
@@ -53,8 +52,8 @@ Open `http://localhost:3000`.
 
 - `GET /api/businesses`
 - `POST /api/businesses`
-  - logged-in users create owner-linked listings
-  - unauthenticated submissions require `adminSecret`
+  - login required
+  - creates owner-linked listings
 - `GET /api/businesses/:id`
 - `PATCH /api/businesses/:id` (owner-only)
 - `GET /api/me/businesses` (owner dashboard)

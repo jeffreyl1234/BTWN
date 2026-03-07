@@ -5,31 +5,21 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUserFromRequest } from "@/lib/supabaseAuthServer";
 
 async function insertBusinessRecord(supabase, payload, user) {
-  if (user) {
-    const { data, error } = await supabase
-      .from("businesses")
-      .insert({
-        ...payload,
-        owner_id: user.id,
-        owner_email: user.email,
-      })
-      .select("*")
-      .single();
-
-    if (error && /owner_id|owner_email|column/i.test(error.message || "")) {
-      throw new Error(
-        "Schema missing owner fields. Re-run supabase/schema.sql before account-based submissions."
-      );
-    }
-
-    return { data, error };
-  }
-
   const { data, error } = await supabase
     .from("businesses")
-    .insert(payload)
+    .insert({
+      ...payload,
+      owner_id: user.id,
+      owner_email: user.email,
+    })
     .select("*")
     .single();
+
+  if (error && /owner_id|owner_email|column/i.test(error.message || "")) {
+    throw new Error(
+      "Schema missing owner fields. Re-run supabase/schema.sql before account-based submissions."
+    );
+  }
 
   return { data, error };
 }
@@ -58,9 +48,9 @@ export async function POST(request) {
     const body = await request.json();
     const user = await getAuthenticatedUserFromRequest(request);
 
-    if (!user && (body?.adminSecret || "") !== process.env.ADMIN_SECRET) {
+    if (!user) {
       return NextResponse.json(
-        { error: "Unauthorized. Log in or provide valid admin secret." },
+        { error: "Unauthorized. Please log in to submit a business." },
         { status: 401 }
       );
     }

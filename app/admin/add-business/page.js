@@ -14,7 +14,6 @@ const initialState = {
   website: "",
   phone: "",
   email: "",
-  adminSecret: "",
 };
 
 export default function AddBusinessPage() {
@@ -62,18 +61,17 @@ export default function AddBusinessPage() {
 
     try {
       const { accessToken } = await getSessionState();
-      const payload = { ...form };
-      const headers = { "Content-Type": "application/json" };
-
-      if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-        delete payload.adminSecret;
+      if (!accessToken) {
+        throw new Error("Log in is required to submit a business.");
       }
 
       const res = await fetch("/api/businesses", {
         method: "POST",
-        headers,
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(form),
       });
 
       const data = await res.json();
@@ -105,7 +103,7 @@ export default function AddBusinessPage() {
           <Link href="/signup" className="text-link-underlined">
             create an owner account
           </Link>
-          . Without login, you can still submit using the admin secret.
+          . Login is required before you can submit.
         </p>
       )}
 
@@ -178,21 +176,8 @@ export default function AddBusinessPage() {
           </label>
         </div>
 
-        {!sessionUser && (
-          <label>
-            Admin secret *
-            <input
-              required
-              type="password"
-              value={form.adminSecret}
-              onChange={(e) => setForm({ ...form, adminSecret: e.target.value })}
-              placeholder="From .env.local ADMIN_SECRET"
-            />
-          </label>
-        )}
-
-        <button className="button" disabled={saving} type="submit">
-          {saving ? "Saving..." : "Save Business"}
+        <button className="button" disabled={saving || !sessionUser} type="submit">
+          {saving ? "Saving..." : sessionUser ? "Save Business" : "Log in to Submit"}
         </button>
       </form>
 
