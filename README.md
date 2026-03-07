@@ -24,7 +24,6 @@ Run the full schema in [`supabase/schema.sql`](./supabase/schema.sql).
 
 `businesses` now includes owner fields used for account-based editing:
 - `owner_id`
-- `owner_email`
 
 If your table already existed, re-run `supabase/schema.sql` to apply the `alter table ... add column if not exists ...` statements.
 
@@ -64,3 +63,11 @@ Open `http://localhost:3000`.
   1. Run the SQL in [`supabase/schema.sql`](./supabase/schema.sql) in Supabase SQL Editor.
   2. Wait a few seconds for schema cache refresh.
   3. Retry the request (or refresh the app).
+
+- If you see `Schema missing owner_id`:
+  1. Run this in Supabase SQL Editor:
+     ```sql
+     alter table public.businesses add column if not exists owner_id uuid;
+     create index if not exists businesses_owner_id_idx on public.businesses(owner_id);
+     ```
+  2. Retry add/edit requests.

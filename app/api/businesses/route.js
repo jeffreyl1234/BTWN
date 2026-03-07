@@ -11,7 +11,6 @@ async function insertBusinessRecord(supabase, payload, user) {
     .insert({
       ...payload,
       owner_id: user.id,
-      owner_email: user.email,
     })
     .select("*")
     .single();
