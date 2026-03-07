@@ -10,14 +10,12 @@ Copy and fill env vars:
 cp .env.example .env.local
 ```
 
-Required values:
+Required values for Supabase-backed reads/writes:
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_SECRET`
+- `ADMIN_SECRET` — shared secret for the Add Business form (POST /api/businesses)
 
-For account signup in the UI, provide either:
+For account signup in the UI, provide one public key:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`, or
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 

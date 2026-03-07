@@ -18,12 +18,14 @@ const initialState = {
 export default function AddBusinessPage() {
   const [form, setForm] = useState(initialState);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function onSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setMessage("");
+    setError("");
 
     try {
       const res = await fetch("/api/businesses", {
@@ -38,7 +40,7 @@ export default function AddBusinessPage() {
       setMessage("Business saved.");
       setForm(initialState);
     } catch (err) {
-      setMessage(err.message);
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -128,12 +130,13 @@ export default function AddBusinessPage() {
         </div>
 
         <label>
-          Admin Secret *
+          Admin secret *
           <input
             required
             type="password"
             value={form.adminSecret}
             onChange={(e) => setForm({ ...form, adminSecret: e.target.value })}
+            placeholder="From .env.local ADMIN_SECRET"
           />
         </label>
 
@@ -142,7 +145,8 @@ export default function AddBusinessPage() {
         </button>
       </form>
 
-      {message && <p>{message}</p>}
+      {error && <p className="auth-error">{error}</p>}
+      {message && <p className="auth-success">{message}</p>}
     </section>
   );
 }

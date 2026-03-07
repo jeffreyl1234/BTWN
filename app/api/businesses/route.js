@@ -7,7 +7,11 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get("q") || "").trim();
-    const category = (searchParams.get("category") || "").trim();
+    const rawCategory = (searchParams.get("category") || "").trim();
+    const category =
+      rawCategory === "" || rawCategory.toLowerCase() === "all"
+        ? "all"
+        : rawCategory.toLowerCase();
     const businesses = await listBusinesses({ q, category });
     return NextResponse.json({ businesses });
   } catch (error) {
