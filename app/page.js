@@ -1,38 +1,78 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+
+const featuredCategories = [
+  "DJing",
+  "Tutoring",
+  "Photography",
+  "Fitness",
+  "Developers",
+  "Design",
+  "Engineering",
+  "Language Tutors",
+  "Videography",
+  "Event Services",
+  "Music",
+];
 
 export default function Home() {
-  return (
-    <section className="stack page-space">
-      <div className="hero card stack">
-        <p className="pill">UCLA Community Directory</p>
-        <h1>Discover trusted student-friendly services around campus.</h1>
-        <p className="muted">
-          BTWN helps students quickly find small businesses for beauty,
-          education, creative work, events, and tech help.
-        </p>
-        <div className="row wrap">
-          <Link href="/explore" className="button">
-            Explore Businesses
-          </Link>
-          <Link href="/admin/add-business" className="button button-secondary">
-            Add Business
-          </Link>
-        </div>
-      </div>
+  const [query, setQuery] = useState("");
+  const router = useRouter();
 
-      <div className="grid grid-3">
-        <article className="card stack">
-          <h3>Browse fast</h3>
-          <p className="muted">Filter by category and quickly compare options.</p>
-        </article>
-        <article className="card stack">
-          <h3>Direct contact</h3>
-          <p className="muted">Reach out by Instagram, phone, email, or website.</p>
-        </article>
-        <article className="card stack">
-          <h3>Built for UCLA</h3>
-          <p className="muted">Focused on businesses students actually use.</p>
-        </article>
+  const exploreHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    const serialized = params.toString();
+    return serialized ? `/explore?${serialized}` : "/explore";
+  }, [query]);
+
+  function onSearchSubmit(event) {
+    event.preventDefault();
+    router.push(exploreHref);
+  }
+
+  return (
+    <section className="home-hero">
+      <div className="home-hero__center">
+        <h1>BT:WN</h1>
+        <p>Discover student talent. Promote your skills. Build your brand.</p>
+
+        <form className="home-search" onSubmit={onSearchSubmit}>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search for a service or business..."
+            aria-label="Search for a service or business"
+          />
+          <button type="submit" aria-label="Search businesses">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M11 4a7 7 0 0 1 5.58 11.22l3.6 3.6-1.42 1.42-3.6-3.6A7 7 0 1 1 11 4Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        </form>
+
+        <div className="category-cloud" role="list" aria-label="Popular categories">
+          {featuredCategories.map((category) => (
+            <Link
+              key={category}
+              href={`/explore?category=${encodeURIComponent(category.toLowerCase())}`}
+              className="category-pill"
+              role="listitem"
+            >
+              {category}
+            </Link>
+          ))}
+        </div>
+
+        <Link href="/explore" className="more-categories-btn">
+          {"More Categories ->"}
+        </Link>
       </div>
     </section>
   );

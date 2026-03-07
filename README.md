@@ -17,6 +17,10 @@ Required values:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `ADMIN_SECRET`
 
+For account signup in the UI, provide either:
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`, or
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
+
 ## 2) Database setup (Supabase SQL editor)
 
 Run:
@@ -68,6 +72,7 @@ Open `http://localhost:3000`.
 - Home: `/`
 - Explore: `/explore`
 - Detail: `/business/:id`
+- Sign up: `/signup`
 - Admin add form: `/admin/add-business`
 - API list/create: `/api/businesses`
 - API detail: `/api/businesses/:id`

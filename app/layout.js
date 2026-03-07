@@ -24,11 +24,14 @@ export default function RootLayout({ children }) {
         <header className="site-header">
           <div className="container row">
             <Link href="/" className="brand">
-              BTWN
+              BT:WN
             </Link>
-            <nav className="row">
+            <nav className="row site-nav">
               <Link href="/explore">Explore</Link>
-              <Link href="/admin/add-business">Add</Link>
+              <Link href="/admin/add-business">Add Your Business</Link>
+              <Link href="/signup" className="button button-secondary">
+                Sign Up
+              </Link>
             </nav>
           </div>
         </header>
