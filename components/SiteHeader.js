@@ -45,8 +45,8 @@ export default function SiteHeader() {
               placeholder="Search for a service or business..."
               aria-label="Search for a service or business"
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <button type="submit" className="header-search-btn" aria-label="Search">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/button.svg" width={20} height={20} alt="" aria-hidden="true" />
             </button>
           </form>

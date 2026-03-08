@@ -57,12 +57,12 @@ export default function ExplorePage() {
           {headingCategory ? (
             <>
               Businesses in{" "}
-              <span className="explore-heading-highlight">"{headingCategory}"</span>
+              <span className="explore-heading-highlight">&quot;{headingCategory}&quot;</span>
             </>
           ) : headingQuery ? (
             <>
               Results for{" "}
-              <span className="explore-heading-highlight">"{headingQuery}"</span>
+              <span className="explore-heading-highlight">&quot;{headingQuery}&quot;</span>
             </>
           ) : (
             "All Businesses"
