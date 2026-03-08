@@ -41,6 +41,15 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const user = await getAuthenticatedUserFromRequest(request);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please log in to submit a business." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     const payload = normalizeBusinessPayload(body);

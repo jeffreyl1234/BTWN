@@ -108,7 +108,24 @@ export default function AddBusinessPage() {
 
       {/* White card matching the business detail and explore card style */}
       <div className="add-biz-card">
-        <form onSubmit={onSubmit} className="add-biz-form" noValidate>
+        {!sessionUser ? (
+          <div className="add-biz-section-first" style={{ textAlign: 'center', padding: '2rem' }}>
+            <p className="muted" style={{ marginBottom: '1.5rem' }}>
+              Log in to list your business and manage your listings.
+            </p>
+            <Link href="/login" className="button header-cta">
+              Log in to BT:WN
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="add-biz-form" noValidate>
+            <div style={{ padding: '0 0 1.5rem 0', borderBottom: '1px solid #e5e7eb', marginBottom: '1.5rem' }}>
+              <p className="muted" style={{ fontSize: '0.88rem', margin: 0 }}>
+                Creating as <strong>{sessionUser.email}</strong>. 
+                You can manage this listing in <Link href="/account" style={{ textDecoration: 'underline' }}>My Businesses</Link>.
+              </p>
+            </div>
+
 
           {/* ── Basic info ─────────────────────────────────────────── */}
           <section className="add-biz-section add-biz-section-first" aria-labelledby="basic-info-heading">
@@ -230,6 +247,7 @@ export default function AddBusinessPage() {
           </div>
 
         </form>
+        )}
       </div>
 
     </div>

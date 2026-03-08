@@ -128,16 +128,6 @@ function BusinessCard({ biz }) {
         <div className="biz-card-info">
           <div className="biz-card-meta">
             <h2 className="biz-card-name">{biz.name}</h2>
-            {/* Placeholder star rating — replace with real data when reviews table is ready */}
-            <div className="biz-card-rating">
-              <div className="biz-card-stars" aria-label="5 out of 5 stars">
-                {[...Array(5)].map((_, i) => (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img key={i} src="/Star.svg" width={16} height={16} alt="" aria-hidden="true" />
-                ))}
-              </div>
-              <span className="biz-card-review-count">5.0 (0 reviews)</span>
-            </div>
           </div>
 
           {biz.description && (

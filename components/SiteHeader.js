@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { getSupabaseBrowser, isSignupConfigured } from "@/lib/supabaseBrowser";
 
 /**
  * Global site header.
@@ -13,8 +14,46 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [q, setQ] = useState("");
-
+  const [user, setUser] = useState(null);
   const isHome = pathname === "/";
+  const signupConfigured = isSignupConfigured();
+  const [ready, setReady] = useState(!signupConfigured);
+
+  useEffect(() => {
+    if (!signupConfigured) {
+      return;
+    }
+
+    const supabase = getSupabaseBrowser();
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setUser(data.session?.user || null);
+      setReady(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setUser(session?.user || null);
+      setReady(true);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [signupConfigured]);
+
+  async function onSignOut() {
+    if (!signupConfigured) return;
+    const supabase = getSupabaseBrowser();
+    await supabase.auth.signOut();
+    setUser(null);
+    router.push("/");
+  }
 
   /* Navigate to explore with the typed query */
   const handleSearch = (e) => {
@@ -54,12 +93,26 @@ export default function SiteHeader() {
 
         {/* Right-side nav actions */}
         <nav className="nav-actions row" aria-label="Site navigation">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/Heart.svg" width={14} height={14} alt="" aria-hidden="true" />
-          <Link href="/explore" className="nav-review-link">Write a Review</Link>
+          <Link href="/explore" className="nav-review-link">Explore</Link>
           <Link href="/admin/add-business" className="nav-add-btn">
             Add Your Business
           </Link>
+
+          {ready && user && (
+            <>
+              <Link href="/account" className="nav-review-link">My Businesses</Link>
+              <button type="button" className="text-button" onClick={onSignOut} style={{ fontSize: '0.82rem' }}>
+                Log out
+              </button>
+            </>
+          )}
+
+          {ready && !user && signupConfigured && (
+            <>
+              <Link href="/login" className="nav-review-link">Log In</Link>
+              <Link href="/signup" className="nav-review-link">Sign Up</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>
