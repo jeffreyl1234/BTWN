@@ -5,7 +5,7 @@ Simple UCLA small-business directory built with Next.js + Supabase.
 ## 1) Environment
 
 Copy and fill env vars:
-#redploy
+#redploy1
 ```bash
 cp .env.example .env.local
 ```
