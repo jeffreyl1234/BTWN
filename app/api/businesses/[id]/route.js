@@ -45,7 +45,7 @@ export async function PATCH(request, { params }) {
       const setupError = toUserFacingSupabaseError(existingError);
       if (
         setupError.startsWith("Database setup incomplete") ||
-        setupError.startsWith("Schema missing owner fields")
+        setupError.startsWith("Schema missing owner_id")
       ) {
         return NextResponse.json(
           { error: setupError },

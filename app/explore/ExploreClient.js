@@ -17,6 +17,14 @@ function normalizeCategory(value) {
   return (value || "all").trim().toLowerCase();
 }
 
+function labelizeCategory(value) {
+  if (!value) return "";
+  return value
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export default function ExploreClient() {
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
@@ -31,6 +39,8 @@ export default function ExploreClient() {
 
   const qParam = (searchParams.get("q") || "").trim();
   const categoryParam = normalizeCategory(searchParams.get("category"));
+  const modeParam = (searchParams.get("mode") || "").trim().toLowerCase();
+  const isReviewMode = modeParam === "review";
 
   const fetchBusinesses = useCallback(async (nextQ, nextCategory) => {
     const thisId = ++fetchIdRef.current;
@@ -79,6 +89,9 @@ export default function ExploreClient() {
     if (nextCategory && nextCategory !== "all") {
       params.set("category", nextCategory);
     }
+    if (isReviewMode) {
+      params.set("mode", "review");
+    }
 
     const serialized = params.toString();
     const href = serialized ? `${pathname}?${serialized}` : pathname;
@@ -101,6 +114,12 @@ export default function ExploreClient() {
 
   return (
     <section className="explore-page">
+      {isReviewMode && (
+        <p className="explore-review-mode-banner">
+          Review mode: choose a business to write a review.
+        </p>
+      )}
+
       <form
         className="explore-search"
         onSubmit={(event) => {
@@ -137,7 +156,7 @@ export default function ExploreClient() {
           >
             {categoryOptions.map((item) => (
               <option key={item} value={item}>
-                {item}
+                {labelizeCategory(item)}
               </option>
             ))}
           </select>
@@ -145,7 +164,7 @@ export default function ExploreClient() {
       </form>
 
       <div className="explore-meta">
-        <h1>All Businesses</h1>
+        <h1>{isReviewMode ? "Select a Business to Review" : "All Businesses"}</h1>
         <p className="muted">
           {loading
             ? "Loading businesses..."
@@ -162,9 +181,9 @@ export default function ExploreClient() {
         {businesses.map((biz) => (
           <Link
             key={biz.id}
-            href={`/business/${biz.id}`}
+            href={`/business/${biz.id}${isReviewMode ? "?review=1" : ""}`}
             className="explore-card-link"
-            aria-label={`Open ${biz.name}`}
+            aria-label={isReviewMode ? `Open ${biz.name} for review` : `Open ${biz.name}`}
           >
             <article className="card stack business-card explore-card">
               <div className="row">
@@ -176,6 +195,7 @@ export default function ExploreClient() {
               <p className="explore-card__contact muted">
                 {biz.phone || biz.email || "Contact info on profile"}
               </p>
+              {isReviewMode && <p className="explore-card__review-cta">Tap to write a review</p>}
             </article>
           </Link>
         ))}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getBusinessById } from "@/lib/businessData";
-import ReviewCard from "@/components/ReviewCard";
+import OwnerActions from "./OwnerActions";
+import BusinessReviews from "@/components/BusinessReviews";
 
 /* Sample reviews — replace with real DB data when reviews table is available */
 const SAMPLE_REVIEWS = [
@@ -24,9 +25,11 @@ const SAMPLE_REVIEWS = [
   },
 ];
 
-export default async function BusinessDetailPage({ params }) {
+export default async function BusinessDetailPage({ params, searchParams }) {
   const { id } = await params;
+  const query = await searchParams;
   const business = await getBusinessById(id);
+  const reviewMode = query?.review === "1";
 
   if (!business) {
     return (
@@ -111,6 +114,8 @@ export default async function BusinessDetailPage({ params }) {
                 </a>
               )}
             </div>
+
+            <OwnerActions businessId={business.id} ownerId={business.owner_id} />
           </div>
         </section>
 
@@ -146,13 +151,14 @@ export default async function BusinessDetailPage({ params }) {
         </section>
 
         {/* Reviews */}
-        <section className="biz-section" aria-labelledby="reviews-heading">
+        <section className="biz-section" aria-labelledby="reviews-heading" id="reviews">
           <h2 id="reviews-heading" className="biz-section-title">REVIEWS</h2>
-          <div className="biz-reviews">
-            {SAMPLE_REVIEWS.map((review) => (
-              <ReviewCard key={review.name} {...review} />
-            ))}
-          </div>
+          <BusinessReviews
+            businessId={business.id}
+            businessName={business.name}
+            initialReviews={SAMPLE_REVIEWS}
+            reviewMode={reviewMode}
+          />
         </section>
 
       </article>

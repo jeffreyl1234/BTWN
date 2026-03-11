@@ -22,10 +22,13 @@ Required values for signup/login in the UI:
 
 Run the full schema in [`supabase/schema.sql`](./supabase/schema.sql).
 
-`businesses` now includes owner fields used for account-based editing:
+`businesses` now includes owner and image fields used for account-based editing and uploads:
 - `owner_id`
+- `profile_image_url`, `gallery_image_urls` (for onboarding uploads)
 
 If your table already existed, re-run `supabase/schema.sql` to apply the `alter table ... add column if not exists ...` statements.
+
+**Storage (optional):** Profile and gallery photos are stored in Supabase Storage. The API creates the `business-images` bucket on first upload if it doesn’t exist. If you see storage errors, create a public bucket named `business-images` in Supabase Dashboard → Storage.
 
 ## 3) Run locally
 
@@ -41,8 +44,9 @@ Open `http://localhost:3000`.
 - `/` Home
 - `/explore` Browse businesses
 - `/business/:id` Business detail
+- `/business/:id?review=1` Review mode
 - `/business/:id/edit` Owner-only edit page
-- `/admin/add-business` Add business (login required)
+- `/admin/add-business` Onboarding + add business (login required)
 - `/signup` Account creation
 - `/login` Login
 - `/account` Owner dashboard

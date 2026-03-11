@@ -163,6 +163,11 @@ select {
   border-radius: 10px;
   background: #fff;
   color: var(--text-primary);
+  font-family: inherit;
+}
+
+button {
+  font-family: inherit;
 }
 
 input:focus,
@@ -938,6 +943,13 @@ label {
   color: #8bb8e8;
 }
 
+.nav-review-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 /* "Add Your Business" pill button in the nav */
 .nav-add-btn {
   background: #d9ebff;
@@ -1593,5 +1605,446 @@ label {
 
   .add-biz-card {
     padding: 1.5rem 1rem;
+  }
+}
+
+/* Explore review flow */
+.explore-review-mode-banner {
+  margin: 0;
+  border: 1px solid #a5cefb;
+  background: rgba(207, 230, 255, 0.35);
+  color: #364153;
+  border-radius: 14px;
+  padding: 0.7rem 0.95rem;
+  font-size: 0.84rem;
+}
+
+.explore-card__review-cta {
+  margin: 0;
+  color: #4f7fb4;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Business page review composer */
+.biz-review-mode-banner {
+  margin: 0;
+  border: 1px solid #a5cefb;
+  background: rgba(207, 230, 255, 0.35);
+  color: #364153;
+  border-radius: 14px;
+  padding: 0.7rem 0.95rem;
+  font-size: 0.84rem;
+}
+
+.biz-review-login {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.biz-review-login p {
+  margin: 0;
+}
+
+.biz-review-form {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid #dbe5f3;
+  border-radius: 14px;
+  padding: 0.95rem;
+  background: #fff;
+}
+
+/* UCLA sign-in page */
+.ucla-login-page {
+  min-height: calc(100vh - 78px);
+  padding: 2rem 1rem 3rem;
+  display: grid;
+  place-items: start center;
+}
+
+.ucla-login-shell {
+  width: min(460px, 100%);
+  display: grid;
+  gap: 1rem;
+}
+
+.ucla-login-hero {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+  padding: 1.75rem 1.5rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.ucla-login-mascot {
+  width: 82px;
+  height: 82px;
+  border-radius: 999px;
+  border: 1px solid #a5cefb;
+  background: #d9ebff;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+}
+
+.ucla-login-hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 500;
+  color: #0a0a0a;
+}
+
+.ucla-login-hero p {
+  margin: 0;
+  color: #4a5565;
+}
+
+.ucla-login-form-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.ucla-login-form {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.ucla-login-label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: #1e2939;
+}
+
+.ucla-login-helper {
+  font-size: 0.76rem;
+  color: #6a7282;
+  font-weight: 400;
+}
+
+.ucla-login-input {
+  border-radius: 16px;
+  border: 1px solid #d2deed;
+  min-height: 52px;
+  padding: 0.75rem 0.95rem;
+  font-size: 0.95rem;
+}
+
+.ucla-login-submit {
+  border: 1px solid #a5cefb;
+  background: #d9ebff;
+  color: #1e2939;
+  border-radius: 16px;
+  min-height: 56px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ucla-login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ucla-login-forgot {
+  border: 0;
+  background: transparent;
+  color: #8bb8e8;
+  font-size: 0.95rem;
+  cursor: pointer;
+  justify-self: center;
+}
+
+.ucla-login-note {
+  border: 1px solid #a5cefb;
+  background: rgba(207, 230, 255, 0.3);
+  border-radius: 16px;
+  text-align: center;
+  padding: 0.8rem 1rem;
+  color: #4a5565;
+  font-size: 0.92rem;
+}
+
+.ucla-login-footer {
+  margin: 0;
+  text-align: center;
+  color: #4a5565;
+}
+
+.ucla-login-footer a {
+  color: #4f7fb4;
+  text-decoration: underline;
+}
+
+/* Onboarding page */
+.onboarding-page {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.onboarding-page > .biz-back-link {
+  margin: 0 0 0 2rem;
+}
+
+.onboarding-shell {
+  background: #fff;
+  border: 1px solid #dbe5f3;
+  border-radius: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.onboarding-header h1 {
+  margin: 0;
+  color: #0a0a0a;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.onboarding-header p {
+  margin: 0.25rem 0 0;
+  color: #4a5565;
+}
+
+.onboarding-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.onboarding-label {
+  display: grid;
+  gap: 0.45rem;
+  color: #0a0a0a;
+  font-weight: 600;
+}
+
+.onboarding-label-title {
+  color: #0a0a0a;
+  font-weight: 600;
+}
+
+.onboarding-input {
+  width: 100%;
+  border: 1px solid #d2deed;
+  border-radius: 14px;
+  min-height: 52px;
+  padding: 0.75rem 0.95rem;
+  background: #fff;
+}
+
+.onboarding-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.onboarding-upload {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.onboarding-upload-dropzone {
+  border: 1px dashed #a5cefb;
+  border-radius: 16px;
+  min-height: 220px;
+  position: relative;
+  background: rgba(207, 230, 255, 0.15);
+  color: #4a5565;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.onboarding-upload-dropzone--small {
+  min-height: 120px;
+}
+
+.onboarding-upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.onboarding-upload-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #a5cefb;
+}
+
+.onboarding-gallery-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.onboarding-gallery-item {
+  margin: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #d2deed;
+  background: #fff;
+  aspect-ratio: 1 / 1;
+}
+
+.onboarding-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.onboarding-tags-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+.onboarding-tag-add-btn {
+  border: 1px solid #a5cefb;
+  background: #d9ebff;
+  color: #1e2939;
+  border-radius: 14px;
+  min-width: 84px;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onboarding-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.onboarding-tag-pill {
+  border: 1px solid #a5cefb;
+  background: #eef5ff;
+  border-radius: 999px;
+  color: #345e8d;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.onboarding-social-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.onboarding-social-fieldset legend {
+  padding: 0;
+  margin-bottom: 0.2rem;
+  font-weight: 600;
+  color: #0a0a0a;
+}
+
+.onboarding-social-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.onboarding-social-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+
+.onboarding-social-icon--instagram {
+  background: linear-gradient(145deg, #ec66cc 0%, #a743f5 100%);
+}
+
+.onboarding-social-icon--mail {
+  background: linear-gradient(145deg, #b2ccec 0%, #8eb8e6 100%);
+}
+
+.onboarding-social-icon--globe {
+  background: linear-gradient(145deg, #4f97ff 0%, #2767f4 100%);
+}
+
+.onboarding-social-glyph {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.onboarding-social-icon--instagram .onboarding-social-glyph,
+.onboarding-social-icon--globe .onboarding-social-glyph {
+  filter: brightness(0) invert(1);
+}
+
+.onboarding-message {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.onboarding-message--success {
+  color: #0f766e;
+}
+
+.onboarding-message--error {
+  color: #b91c1c;
+}
+
+.onboarding-submit-btn {
+  border: 1px solid #a5cefb;
+  background: #d9ebff;
+  color: #1e2939;
+  border-radius: 16px;
+  min-height: 58px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onboarding-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.add-biz-auth-card {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .onboarding-page > .biz-back-link {
+    margin-left: 1.2rem;
+  }
+
+  .onboarding-shell {
+    padding: 1.2rem;
+  }
+
+  .onboarding-header h1 {
+    font-size: 1.65rem;
   }
 }

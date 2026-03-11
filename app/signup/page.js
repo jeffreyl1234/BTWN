@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { getSupabaseBrowser, isSignupConfigured } from "@/lib/supabaseBrowser";
 
 const initialForm = {
@@ -11,24 +12,35 @@ const initialForm = {
   confirmPassword: "",
 };
 
-export default function SignUpPage() {
+function getSafeNextPath(rawNext) {
+  if (!rawNext) return "/account";
+  if (!rawNext.startsWith("/") || rawNext.startsWith("//")) return "/account";
+  return rawNext;
+}
+
+function SignUpPageContent() {
+  const searchParams = useSearchParams();
   const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   const signupConfigured = isSignupConfigured();
+  const intent = searchParams.get("intent") === "review" ? "review" : "add-business";
+  const nextPath = getSafeNextPath(searchParams.get("next"));
+  const isReviewSignup = intent === "review";
 
   const canSubmit = useMemo(() => {
     return (
       signupConfigured &&
       form.fullName.trim() &&
       form.email.trim() &&
+      (!isReviewSignup || form.email.trim().toLowerCase().endsWith("@ucla.edu")) &&
       form.password.length >= 8 &&
       form.confirmPassword.length >= 8 &&
       form.password === form.confirmPassword
     );
-  }, [form, signupConfigured]);
+  }, [form, isReviewSignup, signupConfigured]);
 
   function setField(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -46,6 +58,9 @@ export default function SignUpPage() {
 
       if (!fullName) throw new Error("Full name is required.");
       if (!email) throw new Error("Email is required.");
+      if (isReviewSignup && !email.endsWith("@ucla.edu")) {
+        throw new Error("Use a valid @ucla.edu email to create a review account.");
+      }
       if (form.password.length < 8) {
         throw new Error("Password must be at least 8 characters.");
       }
@@ -56,7 +71,7 @@ export default function SignUpPage() {
       const supabase = getSupabaseBrowser();
       const redirectTo =
         typeof window !== "undefined"
-          ? `${window.location.origin}/account`
+          ? `${window.location.origin}${nextPath}`
           : undefined;
 
       const { error: signUpError } = await supabase.auth.signUp({
@@ -130,8 +145,13 @@ export default function SignUpPage() {
               className="auth-input"
               value={form.email}
               onChange={(event) => setField("email", event.target.value)}
-              placeholder="you@example.com"
+              placeholder={isReviewSignup ? "youremail@ucla.edu" : "you@example.com"}
             />
+            {isReviewSignup && (
+              <span className="muted" style={{ fontSize: "0.8rem" }}>
+                Must be a valid @ucla.edu email address.
+              </span>
+            )}
           </label>
 
           <label className="auth-label">
@@ -177,10 +197,24 @@ export default function SignUpPage() {
         )}
 
         <p className="muted auth-footnote">
-          Already have an account? <Link href="/login">Log in</Link>. You can browse and
+          Already have an account? <Link href={`/login?intent=${intent}&next=${encodeURIComponent(nextPath)}`}>Log in</Link>. You can browse and
           contact businesses without an account.
         </p>
       </div>
     </section>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="auth-page">
+          <p className="muted">Loading sign up...</p>
+        </section>
+      }
+    >
+      <SignUpPageContent />
+    </Suspense>
   );
 }

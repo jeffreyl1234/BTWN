@@ -1,29 +1,95 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { isSignupConfigured, getSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { useRouter } from "next/navigation";
 import { getSessionState } from "@/lib/authClient";
+import { getSupabaseBrowser, isSignupConfigured } from "@/lib/supabaseBrowser";
+
+const CATEGORY_OPTIONS = [
+  "Beauty",
+  "Education",
+  "Entertainment",
+  "Creative",
+  "Tech",
+  "Fitness",
+  "Photography",
+  "Tutoring",
+  "Event Services",
+  "Other",
+];
 
 const initialState = {
   name: "",
   category: "",
-  description: "",
   location: "",
+  description: "",
   instagram: "",
+  email: "",
   website: "",
   phone: "",
-  email: "",
 };
 
+function normalizeInstagram(value) {
+  const normalized = value.trim();
+  if (!normalized) return "";
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return normalized;
+  }
+  return `https://instagram.com/${normalized.replace(/^@/, "")}`;
+}
+
+function normalizeWebsite(value) {
+  const normalized = value.trim();
+  if (!normalized) return "";
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return normalized;
+  }
+  return `https://${normalized}`;
+}
+
+function combineDescriptionAndTags(description, tags) {
+  const text = description.trim();
+  if (!tags.length) return text;
+  const tagLine = `Tags: ${tags.join(", ")}`;
+  return text ? `${text}\n\n${tagLine}` : tagLine;
+}
+
 export default function AddBusinessPage() {
+  const router = useRouter();
+
   const [form, setForm] = useState(initialState);
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sessionUser, setSessionUser] = useState(null);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const signupConfigured = isSignupConfigured();
+
+  const profilePreview = useMemo(() => {
+    if (!profilePhoto) return "";
+    return URL.createObjectURL(profilePhoto);
+  }, [profilePhoto]);
+
+  const galleryPreviews = useMemo(
+    () => galleryPhotos.map((file) => ({ name: file.name, url: URL.createObjectURL(file) })),
+    [galleryPhotos]
+  );
+
+  useEffect(
+    () => () => {
+      if (profilePreview) URL.revokeObjectURL(profilePreview);
+      for (const preview of galleryPreviews) {
+        URL.revokeObjectURL(preview.url);
+      }
+    },
+    [galleryPreviews, profilePreview]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -31,6 +97,7 @@ export default function AddBusinessPage() {
     getSessionState().then(({ user }) => {
       if (!mounted) return;
       setSessionUser(user);
+      setCheckingSession(false);
     });
 
     if (!signupConfigured) {
@@ -45,6 +112,7 @@ export default function AddBusinessPage() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setSessionUser(session?.user || null);
+      setCheckingSession(false);
     });
 
     return () => {
@@ -53,8 +121,26 @@ export default function AddBusinessPage() {
     };
   }, [signupConfigured]);
 
-  async function onSubmit(e) {
-    e.preventDefault();
+  function setField(field) {
+    return (event) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+  }
+
+  function handleAddTag() {
+    const trimmed = tagInput.trim();
+    if (!trimmed) return;
+    if (tags.some((tag) => tag.toLowerCase() === trimmed.toLowerCase())) {
+      setTagInput("");
+      return;
+    }
+
+    setTags((prev) => [...prev, trimmed]);
+    setTagInput("");
+  }
+
+  async function onSubmit(event) {
+    event.preventDefault();
     setSaving(true);
     setMessage("");
     setIsError(false);
@@ -65,191 +151,324 @@ export default function AddBusinessPage() {
         throw new Error("Log in is required to submit a business.");
       }
 
-      const res = await fetch("/api/businesses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(form),
-      });
+      const hasImages = profilePhoto || galleryPhotos.length > 0;
+      let res;
+
+      if (hasImages) {
+        const formData = new FormData();
+        formData.set("name", form.name);
+        formData.set("category", form.category);
+        formData.set("location", form.location);
+        formData.set("description", combineDescriptionAndTags(form.description, tags));
+        formData.set("instagram", normalizeInstagram(form.instagram));
+        formData.set("website", normalizeWebsite(form.website));
+        formData.set("email", form.email.trim().toLowerCase());
+        formData.set("phone", form.phone.trim());
+        if (profilePhoto) formData.set("profilePhoto", profilePhoto);
+        galleryPhotos.forEach((file) => formData.append("galleryPhotos", file));
+
+        res = await fetch("/api/businesses", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: formData,
+        });
+      } else {
+        const payload = {
+          ...form,
+          description: combineDescriptionAndTags(form.description, tags),
+          instagram: normalizeInstagram(form.instagram),
+          website: normalizeWebsite(form.website),
+          email: form.email.trim().toLowerCase(),
+        };
+
+        res = await fetch("/api/businesses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+      }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save.");
 
-      setMessage("Business saved successfully!");
+      setMessage("Business page created.");
       setForm(initialState);
-    } catch (err) {
+      setTags([]);
+      setTagInput("");
+      setProfilePhoto(null);
+      setGalleryPhotos([]);
+
+      if (data.business?.id) {
+        router.push(`/business/${data.business.id}`);
+      }
+    } catch (submitError) {
       setIsError(true);
-      setMessage(err.message);
+      setMessage(submitError.message || "Failed to save.");
     } finally {
       setSaving(false);
     }
   }
 
-  /* Helper to reduce onChange boilerplate */
-  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  if (!signupConfigured) {
+    return (
+      <section className="add-biz-page">
+        <h1 className="add-biz-title">Create Your Business Page</h1>
+        <p className="auth-error">
+          Signup/Login is not configured. Add Supabase public env vars in{" "}
+          <code>.env.local</code>.
+        </p>
+      </section>
+    );
+  }
+
+  if (checkingSession) {
+    return (
+      <section className="add-biz-page">
+        <h1 className="add-biz-title">Create Your Business Page</h1>
+        <p className="muted">Checking your account session...</p>
+      </section>
+    );
+  }
+
+  if (!sessionUser) {
+    return (
+      <section className="add-biz-page">
+        <h1 className="add-biz-title">Create Your Business Page</h1>
+        <p className="add-biz-subtitle">Sign in first, then continue to onboarding.</p>
+        <div className="add-biz-card add-biz-auth-card">
+          <p className="muted">
+            Account login is required for all business submissions. You can still browse
+            and contact businesses without an account.
+          </p>
+          <div className="row wrap">
+            <Link
+              href="/login?intent=add-business&next=%2Fadmin%2Fadd-business"
+              className="button"
+            >
+              Sign in to continue
+            </Link>
+            <Link
+              href="/signup?next=%2Fadmin%2Fadd-business"
+              className="button button-secondary"
+            >
+              Create account
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <div className="add-biz-page">
-
-      {/* Back link — reuses the shared biz-back-link style */}
+    <section className="onboarding-page">
       <Link href="/explore" className="biz-back-link">
         <span aria-hidden="true">←</span> Back to Explore
       </Link>
 
-      {/* Page heading */}
-      <div className="add-biz-heading">
-        <h1 className="add-biz-title">Add Your Business</h1>
-        <p className="add-biz-subtitle">
-          List your services and connect with students in your community.
-        </p>
-      </div>
+      <article className="onboarding-shell">
+        <header className="onboarding-header">
+          <h1>Create Your Business Page</h1>
+          <p>Share your talent with the student community.</p>
+        </header>
 
-      {/* White card matching the business detail and explore card style */}
-      <div className="add-biz-card">
-        {!sessionUser ? (
-          <div className="add-biz-section-first" style={{ textAlign: 'center', padding: '2rem' }}>
-            <p className="muted" style={{ marginBottom: '1.5rem' }}>
-              Log in to list your business and manage your listings.
-            </p>
-            <Link href="/login" className="button header-cta">
-              Log in to BT:WN
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} className="add-biz-form" noValidate>
-            <div style={{ padding: '0 0 1.5rem 0', borderBottom: '1px solid #e5e7eb', marginBottom: '1.5rem' }}>
-              <p className="muted" style={{ fontSize: '0.88rem', margin: 0 }}>
-                Creating as <strong>{sessionUser.email}</strong>. 
-                You can manage this listing in <Link href="/account" style={{ textDecoration: 'underline' }}>My Businesses</Link>.
-              </p>
-            </div>
+        <form className="onboarding-form" onSubmit={onSubmit} noValidate>
+          <label className="onboarding-label">
+            Business Name
+            <input
+              required
+              value={form.name}
+              onChange={setField("name")}
+              placeholder="Enter your business name"
+              className="onboarding-input"
+            />
+          </label>
 
-
-          {/* ── Basic info ─────────────────────────────────────────── */}
-          <section className="add-biz-section add-biz-section-first" aria-labelledby="basic-info-heading">
-            <h2 id="basic-info-heading" className="add-biz-section-title">BASIC INFO</h2>
-
-            <div className="add-biz-row-2">
-              <label className="add-biz-label">
-                Business Name <span className="add-biz-required" aria-hidden="true">*</span>
-                <input
-                  className="add-biz-input"
-                  required
-                  value={form.name}
-                  onChange={set("name")}
-                  placeholder="e.g. Campus Beats DJ"
-                />
-              </label>
-              <label className="add-biz-label">
-                Category <span className="add-biz-required" aria-hidden="true">*</span>
-                <input
-                  className="add-biz-input"
-                  required
-                  value={form.category}
-                  onChange={set("category")}
-                  placeholder="e.g. DJing, Photography"
-                />
-              </label>
-            </div>
-
-            <label className="add-biz-label">
-              Location <span className="add-biz-required" aria-hidden="true">*</span>
-              <input
-                className="add-biz-input"
-                required
-                value={form.location}
-                onChange={set("location")}
-                placeholder="e.g. Westwood, UCLA Campus"
-              />
-            </label>
-
-            <label className="add-biz-label">
-              Description
-              <textarea
-                className="add-biz-input add-biz-textarea"
-                rows={4}
-                value={form.description}
-                onChange={set("description")}
-                placeholder="Describe your services, specialties, and what makes you stand out..."
-              />
-            </label>
-          </section>
-
-          {/* ── Contact info ───────────────────────────────────────── */}
-          <section className="add-biz-section" aria-labelledby="contact-heading">
-            <h2 id="contact-heading" className="add-biz-section-title">CONTACT</h2>
-
-            <div className="add-biz-row-2">
-              <label className="add-biz-label">
-                Email
-                <input
-                  className="add-biz-input"
-                  type="email"
-                  value={form.email}
-                  onChange={set("email")}
-                  placeholder="you@example.com"
-                />
-              </label>
-              <label className="add-biz-label">
-                Phone
-                <input
-                  className="add-biz-input"
-                  type="tel"
-                  value={form.phone}
-                  onChange={set("phone")}
-                  placeholder="(555) 000-0000"
-                />
-              </label>
-              <label className="add-biz-label">
-                Instagram URL
-                <input
-                  className="add-biz-input"
-                  type="url"
-                  value={form.instagram}
-                  onChange={set("instagram")}
-                  placeholder="https://instagram.com/youraccount"
-                />
-              </label>
-              <label className="add-biz-label">
-                Website URL
-                <input
-                  className="add-biz-input"
-                  type="url"
-                  value={form.website}
-                  onChange={set("website")}
-                  placeholder="https://yourwebsite.com"
-                />
-              </label>
-            </div>
-          </section>
-
-
-          {/* ── Submit footer ──────────────────────────────────────── */}
-          <div className="add-biz-footer">
-            {message && (
-              <p
-                className={`add-biz-message${isError ? " add-biz-message-error" : " add-biz-message-success"}`}
-                role={isError ? "alert" : "status"}
-              >
-                {message}
-              </p>
-            )}
-            <button
-              className="add-biz-submit-btn"
-              type="submit"
-              disabled={saving}
-              aria-busy={saving}
+          <label className="onboarding-label">
+            Category
+            <select
+              required
+              value={form.category}
+              onChange={setField("category")}
+              className="onboarding-input"
             >
-              {saving ? "Saving..." : "Save Business"}
-            </button>
+              <option value="">Select a category</option>
+              {CATEGORY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="onboarding-label">
+            Service Area / Location
+            <input
+              required
+              value={form.location}
+              onChange={setField("location")}
+              placeholder="Westwood, UCLA Campus, LA area..."
+              className="onboarding-input"
+            />
+          </label>
+
+          <div className="onboarding-upload">
+            <p className="onboarding-label-title">Upload Profile Photo</p>
+            <label className="onboarding-upload-dropzone">
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="onboarding-upload-input"
+                onChange={(event) => setProfilePhoto(event.target.files?.[0] || null)}
+              />
+              {profilePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profilePreview} alt="Profile preview" className="onboarding-upload-preview" />
+              ) : (
+                <span>Click to upload or drag and drop</span>
+              )}
+            </label>
           </div>
 
-        </form>
-        )}
-      </div>
+          <div className="onboarding-upload">
+            <p className="onboarding-label-title">Upload Gallery Photos</p>
+            <label className="onboarding-upload-dropzone onboarding-upload-dropzone--small">
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="onboarding-upload-input"
+                multiple
+                onChange={(event) => setGalleryPhotos(Array.from(event.target.files || []))}
+              />
+              <span>Click to upload portfolio images</span>
+            </label>
+            {galleryPreviews.length > 0 && (
+              <div className="onboarding-gallery-previews">
+                {galleryPreviews.map((preview, index) => (
+                  <figure key={`gallery-${index}`} className="onboarding-gallery-item">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={preview.url} alt={preview.name} />
+                  </figure>
+                ))}
+              </div>
+            )}
+          </div>
 
-    </div>
+          <label className="onboarding-label">
+            Describe Your Service
+            <textarea
+              value={form.description}
+              onChange={setField("description")}
+              placeholder="Tell students about your services, experience, and what makes you unique..."
+              className="onboarding-input onboarding-textarea"
+              rows={5}
+            />
+          </label>
+
+          <div className="onboarding-label">
+            <span className="onboarding-label-title">Add Tags</span>
+            <div className="onboarding-tags-row">
+              <input
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                placeholder="e.g., photography, grad photos, events"
+                className="onboarding-input"
+              />
+              <button type="button" className="onboarding-tag-add-btn" onClick={handleAddTag}>
+                Add
+              </button>
+            </div>
+            {tags.length > 0 && (
+              <div className="onboarding-tag-list">
+                {tags.map((tag) => (
+                  <button
+                    type="button"
+                    key={tag}
+                    className="onboarding-tag-pill"
+                    onClick={() => setTags((prev) => prev.filter((item) => item !== tag))}
+                    aria-label={`Remove ${tag}`}
+                  >
+                    {tag} ×
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <fieldset className="onboarding-social-fieldset">
+            <legend>Social Links</legend>
+            <label className="onboarding-social-row">
+              <div className="onboarding-social-icon onboarding-social-icon--instagram" aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/Instagram.svg" alt="" className="onboarding-social-glyph" />
+              </div>
+              <input
+                value={form.instagram}
+                onChange={setField("instagram")}
+                placeholder="@username"
+                className="onboarding-input"
+              />
+            </label>
+            <label className="onboarding-social-row">
+              <div className="onboarding-social-icon onboarding-social-icon--mail" aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/Mail.svg" alt="" className="onboarding-social-glyph" />
+              </div>
+              <input
+                type="email"
+                value={form.email}
+                onChange={setField("email")}
+                placeholder="your@email.com"
+                className="onboarding-input"
+              />
+            </label>
+            <label className="onboarding-social-row">
+              <div className="onboarding-social-icon onboarding-social-icon--globe" aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/globe.svg" alt="" className="onboarding-social-glyph" />
+              </div>
+              <input
+                value={form.website}
+                onChange={setField("website")}
+                placeholder="yourwebsite.com"
+                className="onboarding-input"
+              />
+            </label>
+          </fieldset>
+
+          <label className="onboarding-label">
+            Contact Phone (Optional)
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={setField("phone")}
+              placeholder="(123) 456-7890"
+              className="onboarding-input"
+            />
+          </label>
+
+          {message && (
+            <p
+              className={isError ? "onboarding-message onboarding-message--error" : "onboarding-message onboarding-message--success"}
+              role={isError ? "alert" : "status"}
+            >
+              {message}
+            </p>
+          )}
+
+          <button type="submit" className="onboarding-submit-btn" disabled={saving}>
+            {saving ? "Creating..." : "Create Business Page"}
+          </button>
+        </form>
+      </article>
+    </section>
   );
 }

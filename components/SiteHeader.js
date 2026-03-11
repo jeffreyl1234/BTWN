@@ -63,6 +63,18 @@ export default function SiteHeader() {
     router.push(`/explore${q.trim() ? `?${params.toString()}` : ""}`);
   };
 
+  const reviewHref = signupConfigured
+    ? user
+      ? "/explore?mode=review"
+      : "/login?intent=review&next=%2Fexplore%3Fmode%3Dreview"
+    : "/explore";
+
+  const addBusinessHref = signupConfigured
+    ? user
+      ? "/admin/add-business"
+      : "/login?intent=add-business&next=%2Fadmin%2Fadd-business"
+    : "/admin/add-business";
+
   return (
     <header className="site-header">
       <div className="container row header-inner">
@@ -93,24 +105,19 @@ export default function SiteHeader() {
 
         {/* Right-side nav actions */}
         <nav className="nav-actions row" aria-label="Site navigation">
-          <Link href="/explore" className="nav-review-link">Explore</Link>
-          <Link href="/admin/add-business" className="nav-add-btn">
+          <Link href={reviewHref} className="nav-review-link">
+            Write a Review
+          </Link>
+          <Link href={addBusinessHref} className="nav-add-btn">
             Add Your Business
           </Link>
 
           {ready && user && (
             <>
               <Link href="/account" className="nav-review-link">My Businesses</Link>
-              <button type="button" className="text-button" onClick={onSignOut} style={{ fontSize: '0.82rem' }}>
+              <button type="button" className="nav-review-link nav-review-button" onClick={onSignOut}>
                 Log out
               </button>
-            </>
-          )}
-
-          {ready && !user && signupConfigured && (
-            <>
-              <Link href="/login" className="nav-review-link">Log In</Link>
-              <Link href="/signup" className="nav-review-link">Sign Up</Link>
             </>
           )}
         </nav>
