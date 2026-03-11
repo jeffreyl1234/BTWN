@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3 -m json.tool)",
-      "mcp__mcp-registry__search_mcp_registry"
-    ]
-  }
-}
